@@ -7,25 +7,37 @@ const TaskForm = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState('todo');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const userId = localStorage.getItem('userId'); 
+    const predefinedId = 1; // Predefined ID for demonstration purposes
+
     try {
       const response = await axios.post('http://localhost:5000/api/tasks', {
+        id: predefinedId, // Add the predefined ID to the request
         title,
         description,
         status,
-        userId: 1 
+        userId: userId ? Number(userId) : 1 
       });
       console.log('Task created:', response.data);
       setTitle('');
       setDescription('');
       setStatus('todo');
-      navigate('/dashboard');
+      setSuccessMessage('Task created successfully!'); 
+      setErrorMessage(''); 
+      setTimeout(() => {
+        setSuccessMessage(''); 
+      }, 3000);
+      navigate('/dashboard'); 
     } catch (error) {
       console.error('Error creating task:', error);
+      setErrorMessage('Error creating task. Please try again.'); 
     }
   };
 
@@ -55,6 +67,8 @@ const TaskForm = () => {
         </select>
         <button type="submit">Create Task</button>
       </form>
+      {successMessage && <p className="success-message">{successMessage}</p>} 
+      {errorMessage && <p className="error-message">{errorMessage}</p>} 
     </div>
   );
 };

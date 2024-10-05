@@ -69,28 +69,44 @@ sequelize.sync()
   .then(() => console.log('Database connected and models synced'))
   .catch(err => console.error('Database connection error:', err));
 
+// Token Authentication Middleware
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(' ')[1];
+  
+  if (!token) return res.status(401).send('Access Denied: No token provided');
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).send('Invalid token');
+    req.user = user; // Store the user in the request object
+    next();
+  });
+};
+
 // User Registration
 app.post('/api/register', async (req, res) => {
   const { firstName, lastName, email, password } = req.body;
 
-  // Check for existing user
-  const existingUser = await User.findOne({ where: { email } });
-  if (existingUser) {
-    return res.status(400).send('Email already in use');
+  if (!firstName || !lastName || !email || !password) {
+    return res.status(400).send('All fields are required');
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const newUser = new User({ firstName, lastName, email, password: hashedPassword });
-
   try {
-    await newUser.save();
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
+      return res.status(400).send('Email already in use');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = await User.create({ firstName, lastName, email, password: hashedPassword });
+
     res.status(201).send('User registered successfully');
   } catch (error) {
     console.error('Registration error:', error);
     if (error.name === 'SequelizeValidationError') {
       return res.status(400).send('Validation error: ' + error.errors.map(e => e.message).join(', '));
     }
-    res.status(400).send('Error registering user: ' + error.message);
+    res.status(500).send('Error registering user: ' + error.message);
   }
 });
 
@@ -118,16 +134,16 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// Create a Task
-app.post('/api/tasks', async (req, res) => {
-  const { title, description, status, userId } = req.body;
+// Create a Task (Protected)
+app.post('/api/tasks', authenticateToken, async (req, res) => {
+  const { title, description, status } = req.body;
 
   // Use defaults if title and description are not provided
   const newTask = {
     title: title || 'New Task',
     description: description || 'No description provided',
     status: status || 'todo',
-    userId,
+    userId: req.user.id, // Get the userId from the token
   };
 
   try {
@@ -138,25 +154,25 @@ app.post('/api/tasks', async (req, res) => {
   }
 });
 
-// Get All Tasks
-app.get('/api/tasks', async (req, res) => {
+// Get All Tasks (Protected)
+app.get('/api/tasks', authenticateToken, async (req, res) => {
   try {
-    const tasks = await Task.findAll();
+    const tasks = await Task.findAll({ where: { userId: req.user.id } });
     res.json(tasks);
   } catch (error) {
     res.status(500).send('Error fetching tasks: ' + error.message);
   }
 });
 
-// Update a Task
-app.put('/api/tasks/:id', async (req, res) => {
+// Update a Task (Protected)
+app.put('/api/tasks/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
   const { title, description, status } = req.body;
 
   try {
-    const [updated] = await Task.update({ title, description, status }, { where: { id } });
+    const [updated] = await Task.update({ title, description, status }, { where: { id, userId: req.user.id } });
     if (!updated) {
-      return res.status(404).send('Task not found');
+      return res.status(404).send('Task not found or unauthorized');
     }
     const updatedTask = await Task.findByPk(id);
     res.json(updatedTask);
@@ -165,14 +181,14 @@ app.put('/api/tasks/:id', async (req, res) => {
   }
 });
 
-// Delete a Task
-app.delete('/api/tasks/:id', async (req, res) => {
+// Delete a Task (Protected)
+app.delete('/api/tasks/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
 
   try {
-    const deleted = await Task.destroy({ where: { id } });
+    const deleted = await Task.destroy({ where: { id, userId: req.user.id } });
     if (!deleted) {
-      return res.status(404).send('Task not found');
+      return res.status(404).send('Task not found or unauthorized');
     }
     res.status(204).send('Task deleted');
   } catch (error) {

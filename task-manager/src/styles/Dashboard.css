@@ -1,72 +1,51 @@
 .dashboard-container {
-    padding: 20px;
-    max-width: 800px;
-    margin: auto;
-  }
-  
-  .dashboard-container h2 {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  
-  button {
-    display: block;
-    margin: 0 auto 20px;
-    padding: 10px 20px;
-    background-color: #4CAF50; /* Green background */
-    color: white; /* White text */
-    border: none; /* Remove borders */
-    border-radius: 5px; /* Rounded corners */
-    cursor: pointer; /* Pointer cursor on hover */
-    font-size: 16px; /* Font size */
-  }
-  
-  button:hover {
-    background-color: #45a049; /* Darker green on hover */
-  }
-  
-  ul {
-    list-style: none; /* Remove default list styles */
-    padding: 0; /* Remove padding */
-  }
-  
-  li {
-    background-color: #f9f9f9; /* Light grey background */
-    border: 1px solid #ddd; /* Grey border */
-    border-radius: 5px; /* Rounded corners */
-    padding: 15px; /* Padding inside the card */
-    margin: 10px 0; /* Margin between cards */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Light shadow */
-    transition: box-shadow 0.3s; /* Smooth transition for shadow */
-    display: flex;
-     /* Use flexbox for layout */
-     flex-direction: column;
-     /* Space between content and button container */
-   /* Center vertically */
-  }
-  
-  li:hover {
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Darker shadow on hover */
-  }
-  
-  h3 {
-    margin: 0; /* Remove default margin */
-  }
-  
-  p {
-    margin: 5px 0; /* Margin between elements */
-  }
-  
-  span {
-    font-weight: bold; /* Bold for status */
-  }
-  
-  .button-container {
-    display: flex; /* Use flexbox for buttons */
-    gap: 10px; /* Space between buttons */
-  }
-  
-  .button-container button {
-    margin-left: auto; /* Push buttons to the right */
-  }
-  
+  padding: 20px;
+  background-color: #f0f4ff;
+}
+
+h2 {
+  color: #333;
+}
+
+button {
+  margin: 5px;
+  background-color:blue;
+  padding: 10px;
+  color:white;
+  border: none;
+}
+
+.task-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px; /* Space between cards */
+}
+
+.task-card {
+  background-color: #e0f7fa; /* Light blue background for the card */
+  border: 1px solid #b2ebf2; /* Border color */
+  border-radius: 8px;
+  padding: 20px;
+  width: 250px; /* Fixed width for each card */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.button-container {
+  display: flex;
+  justify-content: space-between; /* Align buttons to the edges */
+}
+
+.delete-button {
+  background-color: #ff5252; /* Red for delete */
+  color: white;
+}
+
+.edit-button {
+  background-color: #ffa726; /* Orange for edit */
+  color: white;
+}
+
+.details-button {
+  background-color: #42a5f5; /* Blue for view details */
+  color: white;
+}

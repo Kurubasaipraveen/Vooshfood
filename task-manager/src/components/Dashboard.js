@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
   const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   const addtask = () => {
@@ -46,30 +47,44 @@ const Dashboard = () => {
         setTasks(response.data);
       } catch (error) {
         console.error('Error fetching tasks:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchTasks();
   }, []);
 
+  const sortTasksByStatus = (tasks) => {
+    return tasks.sort((a, b) => {
+      if (a.status === 'completed' && b.status !== 'completed') return -1;
+      if (a.status !== 'completed' && b.status === 'completed') return 1;
+      return 0; 
+    });
+  };
+
   return (
     <div className="dashboard-container">
       <h2>Your Tasks</h2>
       <button onClick={addtask}>Add Task</button>
-      <ul>
-        {tasks.map(task => (
-          <li key={task.id}> 
-            <h3>{task.title}</h3>
-            <p>{task.description}</p>
-            <span>Status: {task.status}</span>
-            <div className='button-container'>
-              <button onClick={() => handleDelete(task.id)}>Delete</button>
-              <button onClick={() => handleEdit(task.id)}>Edit</button>
-              <button onClick={() => handleViewDetails(task.id)}>View Details</button>
+      {loading ? ( 
+        <p>Loading tasks...</p>
+      ) : (
+        <div className="task-cards">
+          {sortTasksByStatus(tasks).map(task => ( 
+            <div className="task-card" key={task.id}> 
+              <h3>{task.title}</h3>
+              <p>{task.description}</p>
+              <p>Created at: {new Date(task.createdAt).toLocaleString()}</p>
+              <div className='button-container'>
+                <button className="delete-button" onClick={() => handleDelete(task.id)}>Delete</button>
+                <button className="edit-button" onClick={() => handleEdit(task.id)}>Edit</button>
+                <button className="details-button" onClick={() => handleViewDetails(task.id)}>View Details</button>
+              </div>
             </div>
-          </li>
-        ))}
-      </ul>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
